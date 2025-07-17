@@ -1,0 +1,315 @@
+// Layout
+.account-list-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f8fa;
+}
+.account-list-main {
+  flex: 1;
+  background: #f6f8fa;
+}
+.account-list-container {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 18px 18px 0 18px;
+  background: #f6f8fa;
+}
+.account-list-breadcrumb {
+  font-size: 15px;
+  color: #888;
+  font-weight: 500;
+  margin: 0 0 18px 0;
+}
+.account-list-action-bar {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 10px 0;
+  align-items: center;
+}
+.account-list-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 7px 18px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.account-list-btn.create {
+  background: #2196f3;
+  color: #fff;
+}
+.account-list-btn.refresh {
+  background: #f5f5f5;
+  color: #2196f3;
+  border: 1px solid #e3e8ee;
+}
+.account-list-role-filter {
+  border: 1.5px solid #e3e8ee;
+  border-radius: 4px;
+  padding: 7px 12px;
+  font-size: 15px;
+  background: #fff;
+  font-family: inherit;
+  margin-left: 12px;
+}
+
+// Table
+.account-list-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.account-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 15px;
+}
+.account-list-table th {
+  border-bottom: 2px solid #d1d5db;
+  padding: 10px 8px;
+  text-align: left;
+  background: #f5f5f5;
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+}
+.account-list-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #e3e8ee;
+  font-size: 15px;
+  color: #222;
+}
+.account-link {
+  color: #1976d2;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+// Avatar
+.account-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e3e8ee;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Role
+.account-role.user {
+  background: #fff3e0;
+  color: #ff9800;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #ffe0b2;
+}
+.account-role.admin {
+  background: #e3f2fd;
+  color: #2196f3;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #b6e0fe;
+}
+
+// Status
+.account-status {
+  background: #e8f5e9;
+  color: #43d477;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #b2f2d6;
+}
+
+// Responsive
+@media (max-width: 900px) {
+  .account-list-container {
+    max-width: 100vw;
+    padding: 12px 2vw 0 2vw;
+  }
+  .account-list-table th, .account-list-table td {
+    padding: 7px 4px;
+    font-size: 13px;
+  }
+}
+
+// Account detail modal
+.account-detail-modal-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30,34,45,0.18);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+.account-detail-form {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 40px 60px 48px 60px;
+  min-width: 600px;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  max-height: 700px;
+  overflow-y: auto;
+}
+.account-detail-breadcrumb {
+  color: #888;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+.account-detail-tabs {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+.account-detail-tabs span {
+  padding: 7px 22px;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  background: #f5f5f5;
+  margin-right: 4px;
+  font-size: 15px;
+  color: #888;
+  transition: background 0.18s, color 0.18s;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+}
+.account-detail-tabs .active {
+  background: #fff;
+  color: #2196f3;
+  font-weight: 600;
+  border-bottom: 2px solid #2196f3;
+}
+.account-detail-action-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.account-detail-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 7px 18px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.account-detail-btn.update {
+  background: #2196f3;
+  color: #fff;
+}
+.account-detail-btn.reset {
+  background: #ff9800;
+  color: #fff;
+}
+.account-detail-btn.avatar {
+  background: #1976d2;
+  color: #fff;
+  margin-top: 12px;
+}
+.account-detail-input {
+  border: 1.5px solid #e3e8ee;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 15px;
+  background: #fff;
+  font-family: inherit;
+}
+.account-detail-avatar-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 18px 0 0 0;
+}
+.account-detail-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #e3e8ee;
+  color: #888;
+  font-size: 64px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.account-history-table {
+  width: 100%;
+  min-width: 100%;
+  // min-height: 600px;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 15px;
+  margin-top: 12px;
+  box-shadow: 0 2px 8px rgba(30,34,45,0.04);
+}
+.account-history-table th, .account-history-table td {
+  border-bottom: 1px solid #e3e8ee;
+  padding: 9px 8px;
+  text-align: left;
+}
+.account-history-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+  color: #222;
+}
+.account-history-table tr:last-child td {
+  border-bottom: none;
+}
+@media (max-width: 900px) {
+  .account-detail-form {
+    min-width: 0;
+    max-width: 99vw;
+    padding: 12px 2vw 18px 2vw;
+  }
+}
+.account-detail-tab-content {
+  min-height: 420px;
+  min-width: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.account-detail-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 26px;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  z-index: 10;
+}
+.account-detail-close:hover {
+  background: #f5f5f5;
+  color: #222;
+} 

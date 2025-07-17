@@ -1,0 +1,142 @@
+.showtime-schedule-create-modal-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(30, 34, 45, 0.18);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.showtime-schedule-create-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(30,34,45,0.18);
+  padding: 32px 32px 24px 32px;
+  min-width: 400px;
+  max-width: 95vw;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+}
+.showtime-schedule-create-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #222;
+}
+.showtime-schedule-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.showtime-schedule-create-label {
+  font-size: 15px;
+  color: #222;
+  font-weight: 500;
+}
+.showtime-schedule-create-input {
+  border: 1.5px solid #e3e8ee;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 15px;
+  background: #fff;
+  font-family: inherit;
+  transition: border 0.2s;
+}
+.showtime-schedule-create-input:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+.showtime-schedule-movie-select-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.showtime-schedule-movie-status {
+  display: inline-block;
+  border-radius: 6px;
+  font-size: 13px;
+  padding: 2px 10px;
+  font-weight: 500;
+  border: 1px solid #b6e0fe;
+}
+.showtime-schedule-movie-status.shown {
+  background: #ffeaea;
+  color: #f44336;
+  border: 1px solid #ffcdd2;
+}
+.showtime-schedule-movie-status.showing {
+  background: #e8f5e9;
+  color: #43d477;
+  border: 1px solid #b2f2d6;
+}
+.showtime-schedule-movie-status.upcoming {
+  background: #e3f2fd;
+  color: #2196f3;
+  border: 1px solid #b6e0fe;
+}
+.showtime-schedule-time-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.showtime-schedule-time-sep {
+  color: #888;
+  font-size: 16px;
+  font-weight: 600;
+}
+.showtime-schedule-create-btn {
+  margin-top: 10px;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 9px 0;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.showtime-schedule-create-btn:hover {
+  background: #1769aa;
+}
+.showtime-schedule-create-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 26px;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  z-index: 10;
+}
+.showtime-schedule-create-close:hover {
+  background: #f5f5f5;
+  color: #222;
+}
+
+@media (max-width: 600px) {
+  .showtime-schedule-create-modal {
+    min-width: 0;
+    width: 98vw;
+    padding: 16px 4vw 12px 4vw;
+  }
+  .showtime-schedule-create-title {
+    font-size: 17px;
+  }
+  .showtime-schedule-create-input {
+    font-size: 13px;
+    padding: 7px 8px;
+  }
+  .showtime-schedule-create-btn {
+    font-size: 13px;
+    padding: 7px 0;
+  }
+} 

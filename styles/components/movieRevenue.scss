@@ -1,0 +1,98 @@
+.movie-revenue-container {
+  padding: 18px 18px 0 18px;
+  max-width: 1300px;
+  margin: 0 auto;
+  background: #f6f8fa;
+}
+.movie-revenue-breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  color: #888;
+  font-weight: 500;
+  margin: 0 0 18px 0;
+  gap: 6px;
+}
+.breadcrumb-icon {
+  color: #bdbdbd;
+  font-size: 16px;
+  margin-right: 4px;
+}
+.breadcrumb-link {
+  color: #888;
+}
+.breadcrumb-sep {
+  color: #ccc;
+  margin: 0 2px;
+}
+.breadcrumb-current {
+  color: #222;
+  font-weight: 600;
+}
+.movie-revenue-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.movie-revenue-filter-bar input[type="date"] {
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 14px;
+  background: #fff;
+}
+.movie-revenue-btn {
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.2s;
+}
+.movie-revenue-btn.load {
+  background: #e3f2fd;
+  color: #2196f3;
+  margin-left: 8px;
+}
+.movie-revenue-btn.export {
+  background: #43d477;
+  color: #fff;
+}
+.movie-revenue-chart-box {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  border: 1.5px solid #e3e8ee;
+  padding: 14px 12px 8px 12px;
+  min-width: 340px;
+  margin-bottom: 0;
+}
+.movie-revenue-charts-row {
+  display: flex;
+  gap: 16px;
+}
+.movie-revenue-table-section {
+  display: flex;
+  gap: 12px;
+}
+.movie-revenue-table-section > div {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  border: 1.5px solid #e3e8ee;
+  padding: 14px 12px 8px 12px;
+  min-width: 340px;
+}
+@media (max-width: 900px) {
+  .movie-revenue-charts-row, .movie-revenue-table-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .movie-revenue-chart-box, .movie-revenue-table-section > div {
+    min-width: unset;
+  }
+} 

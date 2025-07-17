@@ -1,5 +1,7 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCoffee } from "@fortawesome/free-solid-svg-icons";
 
 export default function Home() {
   return (
@@ -19,6 +21,9 @@ export default function Home() {
           </li>
           <li>Save and see your changes instantly.</li>
         </ol>
+        <div style={{ margin: '16px 0' }}>
+          <FontAwesomeIcon icon={faCoffee} className="fa-icon" /> FontAwesome icon test
+        </div>
 
         <div className={styles.ctas}>
           <a
