@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "../styles/components/sidebar.scss";
 import { useRouter, usePathname } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "@/hooks/useAuth";
 
 const sidebarMenu = [
   {
     key: "dashboard",
     label: "Dashboard",
     children: [
-      { label: "Tổng quan", path: "/home" },
+      { label: "Tổng quan", path: "/" },
       { label: "Doanh thu theo phim", path: "/movie-revenue" },
     ],
   },
@@ -53,8 +56,8 @@ const sidebarMenu = [
     key: "showtime",
     label: "Quản lý suất chiếu",
     children: [
-      { label: "Danh sách lịch chiếu", path: "/showtime/list" },
-      { label: "Danh sách suất chiếu", path: "/showtime/schedule" },
+      { label: "Danh sách lịch chiếu", path: "/showtime/schedule-list" },
+      { label: "Danh sách suất chiếu", path: "/showtime/schedule-showtime" },
     ],
   },
   {
@@ -93,7 +96,8 @@ export default function AdminSidebar() {
   const [openMenus, setOpenMenus] = useState(["dashboard"]);
   const router = useRouter();
   const pathname = usePathname();
-  // Tìm active menu theo pathname
+  const { logout } = useAuth();
+
   const findActive = () => {
     for (const menu of sidebarMenu) {
       for (let i = 0; i < menu.children.length; ++i) {
@@ -104,32 +108,86 @@ export default function AdminSidebar() {
     }
     return { parent: "dashboard", child: 0 };
   };
+
   const [activeMenu, setActiveMenu] = useState(findActive());
-  React.useEffect(() => {
-    setActiveMenu(findActive());
+
+  useEffect(() => {
     const active = findActive();
+    setActiveMenu(active);
     setOpenMenus((prev) =>
       prev.includes(active.parent) ? prev : [...prev, active.parent]
     );
   }, [pathname]);
+
   const toggleMenu = (key: string) => {
     setOpenMenus((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
   };
+
+  // Dropdown logic
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <aside className="admin-sidebar">
-      <div className="sidebar-title">ADMIN</div>
+      <div className="sidebar-header">
+        <span className="sidebar-title">ADMIN</span>
+        <div className="user-icon-wrapper" ref={dropdownRef}>
+          <FontAwesomeIcon
+            icon={faUser}
+            className="user-icon"
+            onClick={() => setShowDropdown(!showDropdown)}
+          />
+          {showDropdown && (
+            <div className="user-dropdown">
+              <div
+                className="user-dropdown-item"
+                onClick={() => router.push("/account/manage")}
+              >
+                Manage My Account
+              </div>
+                <div
+                  className="user-dropdown-item"
+                  onClick={logout}
+                >
+                Logout
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
       <nav>
         <ul className="sidebar-menu-list">
           {sidebarMenu.map((menu, idx) => (
-            <li key={menu.key} className={"sidebar-menu-item " + (openMenus.includes(menu.key) ? "open" : "") }>
+            <li
+              key={menu.key}
+              className={
+                "sidebar-menu-item " + (openMenus.includes(menu.key) ? "open" : "")
+              }
+            >
               <div
-                className={"sidebar-menu-parent " + (activeMenu.parent === menu.key ? "active" : "")}
+                className={
+                  "sidebar-menu-parent " +
+                  (activeMenu.parent === menu.key ? "active" : "")
+                }
                 onClick={() => toggleMenu(menu.key)}
               >
                 <span className="sidebar-menu-label">{menu.label}</span>
-                <span className="sidebar-menu-arrow">{openMenus.includes(menu.key) ? "▼" : "▶"}</span>
+                <span className="sidebar-menu-arrow">
+                  {openMenus.includes(menu.key) ? "▼" : "▶"}
+                </span>
               </div>
               {openMenus.includes(menu.key) && (
                 <ul className="sidebar-submenu-list">
@@ -138,7 +196,10 @@ export default function AdminSidebar() {
                       key={child.label}
                       className={
                         "sidebar-submenu-item " +
-                        (activeMenu.parent === menu.key && activeMenu.child === cidx ? "active" : "")
+                        (activeMenu.parent === menu.key &&
+                        activeMenu.child === cidx
+                          ? "active"
+                          : "")
                       }
                       onClick={() => {
                         setActiveMenu({ parent: menu.key, child: cidx });
@@ -156,4 +217,4 @@ export default function AdminSidebar() {
       </nav>
     </aside>
   );
-} 
+}
