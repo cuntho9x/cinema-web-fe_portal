@@ -11,7 +11,7 @@ const sidebarMenu = [
     label: "Dashboard",
     children: [
       { label: "Tổng quan", path: "/" },
-      { label: "Doanh thu theo phim", path: "/movie-revenue" },
+      // { label: "Doanh thu theo phim", path: "/movie-revenue" },
     ],
   },
   {
@@ -56,7 +56,7 @@ const sidebarMenu = [
     key: "showtime",
     label: "Quản lý suất chiếu",
     children: [
-      { label: "Danh sách lịch chiếu", path: "/showtime/schedule-list" },
+      // { label: "Danh sách lịch chiếu", path: "/showtime/schedule-list" },
       { label: "Danh sách suất chiếu", path: "/showtime/schedule-showtime" },
     ],
   },
@@ -93,7 +93,6 @@ const sidebarMenu = [
 ];
 
 export default function AdminSidebar() {
-  const [openMenus, setOpenMenus] = useState(["dashboard"]);
   const router = useRouter();
   const pathname = usePathname();
   const { logout } = useAuth();
@@ -106,18 +105,55 @@ export default function AdminSidebar() {
         }
       }
     }
+    // Nếu không tìm thấy, mặc định là dashboard
     return { parent: "dashboard", child: 0 };
   };
 
+  // Khởi tạo: chỉ mở Dashboard nếu đang ở trang dashboard (khi vừa đăng nhập)
+  const [openMenus, setOpenMenus] = useState<string[]>(() => {
+    // Lần đầu: chỉ mở Dashboard nếu đang ở trang dashboard
+    const isDashboard = pathname === "/" || pathname === "/movie-revenue";
+    return isDashboard ? ["dashboard"] : [];
+  });
   const [activeMenu, setActiveMenu] = useState(findActive());
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     const active = findActive();
     setActiveMenu(active);
-    setOpenMenus((prev) =>
-      prev.includes(active.parent) ? prev : [...prev, active.parent]
-    );
-  }, [pathname]);
+    const isDashboardPage = pathname === "/" || pathname === "/movie-revenue";
+    
+    if (!hasInitialized) {
+      // Lần đầu mount (vừa đăng nhập): chỉ mở Dashboard nếu đang ở trang dashboard
+      if (isDashboardPage) {
+        setOpenMenus(["dashboard"]);
+      } else if (active.parent !== "dashboard") {
+        // Nếu đang ở menu khác, chỉ mở menu đó (trường hợp refresh trang)
+        setOpenMenus([active.parent]);
+      }
+      setHasInitialized(true);
+      return;
+    }
+
+    // Sau khi đã khởi tạo: chỉ tự động mở menu hiện tại, không tự động mở Dashboard khi click vào menu khác
+    if (isDashboardPage) {
+      // Đang ở trang dashboard: mở Dashboard nếu chưa mở (khi quay lại từ menu khác)
+      setOpenMenus((prev) =>
+        prev.includes("dashboard") ? prev : [...prev, "dashboard"]
+      );
+    } else if (active.parent !== "dashboard") {
+      // Đang ở menu khác: chỉ mở menu đó, đóng Dashboard (không tự động mở Dashboard)
+      // Nhưng giữ lại các menu khác nếu user đã tự tay mở chúng
+      setOpenMenus((prev) => {
+        // Lọc bỏ Dashboard (không tự động mở khi ở menu khác)
+        const withoutDashboard = prev.filter(key => key !== "dashboard");
+        // Thêm menu hiện tại nếu chưa có
+        return withoutDashboard.includes(active.parent) 
+          ? withoutDashboard 
+          : [...withoutDashboard, active.parent];
+      });
+    }
+  }, [pathname, hasInitialized]);
 
   const toggleMenu = (key: string) => {
     setOpenMenus((prev) =>

@@ -1,48 +1,186 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminSidebar from "@/components/AdminSidebar";
 import "@/styles/components/showtimeSchedule.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome } from "@fortawesome/free-solid-svg-icons";
-import ShowtimeScheduleCreateModal from "@/components/ShowtimeScheduleCreateModal";
+import { faHome, faSearch, faPlus } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import ScheduleShowtimeCreateModal from "@/components/ScheduleShowtimeCreateModal";
 
-const cinemas = [
-  { id: 1, name: "HCinema Aeon Hà Đông" },
-  { id: 2, name: "CGV Vincom Bà Triệu" },
-  { id: 3, name: "Lotte Cinema Landmark" },
-];
-const rooms = [
-  { id: 1, name: "Cinema 1", cinemaId: 1 },
-  { id: 2, name: "GOLD CLASS", cinemaId: 1 },
-  { id: 3, name: "Cinema 2", cinemaId: 2 },
-  { id: 4, name: "IMAX", cinemaId: 3 },
-];
-const showtimes = [
-  { id: 1, movie: "Tà Khúc Triệu Vong", format: "2D", subtitle: "Phụ đề", time: "08:00 - 09:45", type: "Theo lịch", status: "Đã chiếu", roomId: 1 },
-  { id: 2, movie: "Kẻ Thế Thân", format: "2D", subtitle: "Phụ đề", time: "10:15 - 12:10", type: "Theo lịch", status: "Đang chiếu", roomId: 1 },
-  { id: 3, movie: "Người 'Bạn' Trong Tưởng Tượng", format: "2D", subtitle: "Phụ đề", time: "12:40 - 14:35", type: "Theo lịch", status: "Sắp chiếu", roomId: 1 },
-  { id: 4, movie: "Lật Mặt 7: Một Điều Ước", format: "2D", subtitle: "Phụ đề", time: "15:05 - 17:15", type: "Theo lịch", status: "Sắp chiếu", roomId: 1 },
-  { id: 5, movie: "Cái Giá Của Hạnh Phúc", format: "2D", subtitle: "Phụ đề", time: "17:45 - 20:00", type: "Theo lịch", status: "Sắp chiếu", roomId: 1 },
-  { id: 6, movie: "Vây Hãm: Kẻ Trừng Phạt", format: "2D", subtitle: "Phụ đề", time: "20:30 - 22:20", type: "Theo lịch", status: "Sắp chiếu", roomId: 1 },
-  { id: 7, movie: "Người 'Bạn' Trong Tưởng Tượng", format: "2D", subtitle: "Phụ đề", time: "22:50 - 00:45", type: "Theo lịch", status: "Sắp chiếu", roomId: 1 },
-];
+interface Theater {
+  theater_id: number;
+  theater_name: string;
+}
 
-const statusColor: Record<string, string> = {
-  "Đã chiếu": "shown",
-  "Đang chiếu": "showing",
-  "Sắp chiếu": "upcoming",
-};
+interface Room {
+  room_id: number;
+  room_name: string;
+  theater_id: number;
+}
 
-export default function ShowtimeSchedulePage() {
-  const [selectedCinema, setSelectedCinema] = useState(1);
-  const [selectedRoom, setSelectedRoom] = useState(1);
-  const [date, setDate] = useState("2024-05-16");
+interface Movie {
+  movie_id: number;
+  movie_title: string;
+  movie_poster: string | null;
+  duration: number;
+}
+
+interface ScheduleShowtime {
+  id: number;
+  movie_id: number;
+  theater_id: number;
+  room_id: number;
+  show_date: string;
+  start_time: string;
+  end_time: string;
+  graphics_type: string;
+  translation_type: string;
+  movie: Movie;
+  theater: Theater;
+  room: Room;
+}
+
+export default function ScheduleShowtimePage() {
+  const [theaters, setTheaters] = useState<Theater[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [showtimes, setShowtimes] = useState<ScheduleShowtime[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
   const [openCreateModal, setOpenCreateModal] = useState(false);
+  
+  const [selectedTheaterId, setSelectedTheaterId] = useState<number | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
-  const filteredRooms = rooms.filter(r => r.cinemaId === selectedCinema);
-  const filteredShowtimes = showtimes.filter(s => s.roomId === selectedRoom);
-  const cinemaName = cinemas.find(c => c.id === selectedCinema)?.name || "";
-  const roomName = filteredRooms.find(r => r.id === selectedRoom)?.name || "";
+  // Fetch theaters
+  useEffect(() => {
+    const fetchTheaters = async () => {
+      try {
+        const response = await axios.get("http://localhost:3000/theaters", {
+          withCredentials: true,
+        });
+        setTheaters(response.data);
+      } catch (err) {
+        console.error("Error fetching theaters:", err);
+      }
+    };
+    fetchTheaters();
+  }, []);
+
+  // Fetch rooms when theater is selected
+  useEffect(() => {
+    const fetchRooms = async () => {
+      if (!selectedTheaterId) {
+        setRooms([]);
+        setSelectedRoomId(null);
+        return;
+      }
+
+      try {
+        const response = await axios.get(`http://localhost:3000/rooms/theater/${selectedTheaterId}`, {
+          withCredentials: true,
+        });
+        setRooms(response.data);
+        setSelectedRoomId(null);
+      } catch (err) {
+        console.error("Error fetching rooms:", err);
+        setRooms([]);
+      }
+    };
+
+    fetchRooms();
+  }, [selectedTheaterId]);
+
+  const handleSearch = async () => {
+    if (!selectedTheaterId || !selectedRoomId || !selectedDate) {
+      alert("Vui lòng chọn đầy đủ: Rạp, Phòng và Ngày chiếu");
+      setShowtimes([]);
+      setHasSearched(false);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      setError(null);
+      setHasSearched(true);
+      
+      const params: any = {
+        theaterId: selectedTheaterId.toString(),
+        roomId: selectedRoomId.toString(),
+        showDate: selectedDate,
+      };
+      
+      const response = await axios.get<ScheduleShowtime[]>("http://localhost:3000/schedule-showtime", {
+        params,
+        withCredentials: true,
+      });
+      
+      const showtimesData = Array.isArray(response.data) ? response.data : [];
+      
+      const filteredShowtimes = showtimesData.filter(showtime => {
+        if (showtime.theater_id !== selectedTheaterId) return false;
+        if (showtime.room_id !== selectedRoomId) return false;
+        const showDate = new Date(showtime.show_date);
+        const selectedDateObj = new Date(selectedDate + 'T00:00:00');
+        const showDateOnly = new Date(showDate.getFullYear(), showDate.getMonth(), showDate.getDate());
+        const selectedDateOnly = new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), selectedDateObj.getDate());
+        
+        if (showDateOnly.getTime() !== selectedDateOnly.getTime()) return false;
+        
+        return true;
+      });
+      
+      setShowtimes(filteredShowtimes);
+    } catch (err: any) {
+      console.error("Error fetching showtimes:", err);
+      setError("Không thể tải danh sách xuất chiếu");
+      setShowtimes([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatGraphicsType = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      TWO_D: "2D",
+      THREE_D: "3D",
+      IMAX: "IMAX",
+    };
+    return typeMap[type] || type;
+  };
+
+  const formatTranslationType = (type: string) => {
+    const typeMap: { [key: string]: string } = {
+      LongTieng: "Lồng tiếng",
+      PhuDe: "Phụ đề",
+    };
+    return typeMap[type] || type;
+  };
+
+  useEffect(() => {
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+  }, []);
 
   return (
     <div className="showtime-schedule-layout">
@@ -53,68 +191,172 @@ export default function ShowtimeSchedulePage() {
             <FontAwesomeIcon icon={faHome} className="breadcrumb-icon" />
             <span className="breadcrumb-link">Dashboard</span>
             <span className="breadcrumb-sep">/</span>
-            <span className="breadcrumb-current">Danh sách suất chiếu</span>
+            <span className="breadcrumb-current">Danh sách xuất chiếu</span>
           </div>
+
+          {/* Action Bar */}
+          <div className="showtime-schedule-action-bar">
+            <button 
+              className="showtime-schedule-create-btn" 
+              onClick={() => setOpenCreateModal(true)}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+              Tạo suất chiếu
+            </button>
+          </div>
+
+          {/* Search Filter - Horizontal Layout */}
           <div className="showtime-schedule-filter-bar">
-            <label>Rạp chiếu:</label>
-            <select value={selectedCinema} onChange={e => {
-              setSelectedCinema(Number(e.target.value));
-              setSelectedRoom(rooms.find(r => r.cinemaId === Number(e.target.value))?.id || 1);
-            }}>
-              {cinemas.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <div className="filter-item">
+              <label>
+                Rạp chiếu <span className="required-mark">*</span>
+              </label>
+              <select
+                value={selectedTheaterId || ""}
+                onChange={(e) => setSelectedTheaterId(e.target.value ? Number(e.target.value) : null)}
+              >
+                <option value="">-- Chọn rạp chiếu --</option>
+                {theaters.map((theater) => (
+                  <option key={theater.theater_id} value={theater.theater_id}>
+                    {theater.theater_name}
+                  </option>
+                ))}
             </select>
-            <label>Phòng chiếu:</label>
-            <select value={selectedRoom} onChange={e => setSelectedRoom(Number(e.target.value))}>
-              {filteredRooms.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </div>
+
+            <div className="filter-item">
+              <label>
+                Phòng chiếu <span className="required-mark">*</span>
+              </label>
+              <select
+                value={selectedRoomId || ""}
+                onChange={(e) => setSelectedRoomId(e.target.value ? Number(e.target.value) : null)}
+                disabled={!selectedTheaterId || rooms.length === 0}
+              >
+                <option value="">-- Chọn phòng chiếu --</option>
+                {rooms.map((room) => (
+                  <option key={room.room_id} value={room.room_id}>
+                    {room.room_name}
+                  </option>
+                ))}
             </select>
-            <label>Ngày chiếu:</label>
-            <input type="date" value={date} onChange={e => setDate(e.target.value)} />
-            <button className="showtime-schedule-search-btn">Tìm kiếm</button>
+            </div>
+
+            <div className="filter-item">
+              <label>
+                Ngày chiếu <span className="required-mark">*</span>
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+              />
+            </div>
+
+            <button
+              onClick={handleSearch}
+              disabled={searchLoading || !selectedTheaterId || !selectedRoomId || !selectedDate}
+              className="showtime-schedule-search-btn"
+            >
+              <FontAwesomeIcon icon={faSearch} />
+              {searchLoading ? "Đang tìm..." : "Tìm kiếm"}
+            </button>
           </div>
-          <div className="showtime-schedule-date-bar">
-            <span>Lịch chiếu ngày: <b>{date.split("-").reverse().join("-")}</b></span>
-            <span className="showtime-schedule-cinema">Rạp: {cinemas.find(c => c.id === selectedCinema)?.name}</span>
+
+          {error && (
+            <div className="showtime-error-message">
+              <span className="error-icon">⚠️</span>
+              <span>{error}</span>
           </div>
+          )}
+
+          {/* Results Table - Max 10 rows with scroll */}
+          {hasSearched && searchLoading ? (
+            <div className="showtime-loading-state">
+              <div className="loading-icon">⏳</div>
+              <div className="loading-text">Đang tìm kiếm...</div>
+          </div>
+          ) : hasSearched && !searchLoading && showtimes.length > 0 ? (
           <div className="showtime-schedule-table-wrap">
+              <div className="showtime-table-header">
+                <span className="header-icon">🎬</span>
+                <span>Danh sách xuất chiếu</span>
+                <span className="header-count">{showtimes.length} suất</span>
+              </div>
+              <div className="showtime-table-body">
             <table className="showtime-schedule-table">
               <thead>
                 <tr>
-                  <th></th>
-                  <th>Phim chiếu</th>
-                  <th>Hình thức chiếu</th>
-                  <th>Hình thức dịch</th>
-                  <th>Thời gian chiếu</th>
-                  <th>Loại suất chiếu</th>
-                  <th>Trạng thái</th>
+                      <th>Phim</th>
+                      <th>Ngày chiếu</th>
+                      <th>Giờ bắt đầu</th>
+                      <th>Giờ kết thúc</th>
+                      <th>Loại hình ảnh</th>
+                      <th>Loại phụ đề</th>
+                      <th>Thời lượng</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredShowtimes.map(s => (
-                  <tr key={s.id}>
-                    <td><span className="showtime-schedule-row-icon">≡</span></td>
-                    <td><span className="showtime-schedule-movie-link">{s.movie}</span></td>
-                    <td><span className="showtime-schedule-format">{s.format}</span></td>
-                    <td><span className="showtime-schedule-subtitle subtitle-green">{s.subtitle}</span></td>
-                    <td><span className="showtime-schedule-time time-orange">{s.time}</span></td>
-                    <td><span className="showtime-schedule-type type-green">{s.type}</span></td>
-                    <td><span className={`showtime-schedule-status ${statusColor[s.status]}`}>{s.status}</span></td>
+                    {showtimes.map((showtime) => (
+                      <tr key={showtime.id}>
+                        <td>
+                          <div className="movie-info">
+                            {showtime.movie.movie_poster && (
+                              <img
+                                src={showtime.movie.movie_poster}
+                                alt={showtime.movie.movie_title}
+                                className="showtime-movie-poster"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = "none";
+                                }}
+                              />
+                            )}
+                            <span className="showtime-schedule-movie-link">{showtime.movie.movie_title}</span>
+                          </div>
+                        </td>
+                        <td>{formatDate(showtime.show_date)}</td>
+                        <td>
+                          <span className="time-orange">{formatTime(showtime.start_time)}</span>
+                        </td>
+                        <td>
+                          <span className="time-orange">{formatTime(showtime.end_time)}</span>
+                        </td>
+                        <td>
+                          <span className="showtime-schedule-format">{formatGraphicsType(showtime.graphics_type)}</span>
+                        </td>
+                        <td>
+                          <span className="subtitle-green">{formatTranslationType(showtime.translation_type)}</span>
+                        </td>
+                        <td>{showtime.movie.duration} phút</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <button className="showtime-schedule-create-btn" onClick={() => setOpenCreateModal(true)}>
-            + Thêm lịch chiếu
-          </button>
+            </div>
+          ) : hasSearched && !searchLoading && showtimes.length === 0 ? (
+            <div className="showtime-empty-state">
+              <div className="empty-icon">🔍</div>
+              <div className="empty-title">Không tìm thấy xuất chiếu</div>
+              <div className="empty-message">
+                Không có xuất chiếu nào cho rạp, phòng và ngày đã chọn
+              </div>
+            </div>
+          ) : null}
         </div>
-        <ShowtimeScheduleCreateModal
+      </main>
+      {openCreateModal && (
+        <ScheduleShowtimeCreateModal
           open={openCreateModal}
           onClose={() => setOpenCreateModal(false)}
-          cinema={cinemaName}
-          room={roomName}
-          date={date}
+          onSuccess={() => {
+            // Refresh danh sách nếu đã search
+            if (hasSearched) {
+              handleSearch();
+            }
+          }}
         />
-      </main>
+      )}
     </div>
   );
 } 

@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from "react";
 import "../styles/components/roomCreate.scss";
+import axios from "axios";
 
 interface Room {
   name: string;
   type: string;
   rows: string;
   cols: string;
+  roomId?: number;
+  roomSlug?: string;
+  theaterSlug?: string;
 }
 
-export default function RoomEditModal({ open, onClose, room }: { open: boolean; onClose: () => void; room: Room | null }) {
+export default function RoomEditModal({ 
+  open, 
+  onClose, 
+  room,
+  onSuccess
+}: { 
+  open: boolean; 
+  onClose: () => void; 
+  room: Room | null;
+  onSuccess?: () => void;
+}) {
   const [form, setForm] = useState<Room>({ name: "", type: "", rows: "", cols: "" });
+  const [originalName, setOriginalName] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (room) setForm(room);
+    if (room) {
+      setForm(room);
+      setOriginalName(room.name);
+    }
   }, [room]);
 
   if (!open || !room) return null;
@@ -21,38 +41,154 @@ export default function RoomEditModal({ open, onClose, room }: { open: boolean; 
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // mock: gọi onClose luôn
-    onClose();
+    
+    if (!form.name || !form.type || !form.rows || !form.cols || !form.theaterSlug || !form.roomSlug) {
+      alert('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const roomTypeMap: { [key: string]: string } = {
+        "Tiêu chuẩn": "TWO_D",
+        "2D": "TWO_D",
+        "3D": "THREE_D",
+        "IMAX": "IMAX",
+        "TWO_D": "TWO_D",
+        "THREE_D": "THREE_D",
+      };
+
+      // Tạo room_slug mới nếu tên phòng thay đổi
+      const slugify = (str: string) => {
+        return str
+          .toLowerCase()
+          .normalize('NFD').replace(/\p{Diacritic}/gu, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)+/g, '');
+      };
+
+      const updateData: any = {
+        room_name: form.name,
+        room_type: roomTypeMap[form.type] || form.type,
+        row: parseInt(form.rows),
+        column: parseInt(form.cols),
+      };
+
+      // Cập nhật room_slug nếu tên phòng thay đổi
+      if (form.name !== originalName) {
+        updateData.room_slug = slugify(form.name);
+      }
+
+      await axios.patch(`http://localhost:3000/theaters/${form.theaterSlug}/rooms/${form.roomSlug}`, updateData, {
+        withCredentials: true,
+      });
+
+      alert("Cập nhật phòng chiếu thành công!");
+      onClose();
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err: any) {
+      console.error("Error updating room:", err);
+      setError(err.response?.data?.message || "Không thể cập nhật phòng chiếu");
+      alert(err.response?.data?.message || "Không thể cập nhật phòng chiếu");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
+  // Đóng modal khi click ra ngoài
+  const handleBgClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   };
 
   return (
-    <div className="room-create-modal-bg">
-      <div className="room-create-modal">
+    <div className="room-create-modal-bg" onClick={handleBgClick}>
+      <div className="room-create-modal" onClick={(e) => e.stopPropagation()}>
+        <button className="room-create-close" type="button" onClick={onClose}>×</button>
         <div className="room-create-title">Cập nhật phòng chiếu</div>
+        {error && (
+          <div className="room-create-error">
+            {error}
+          </div>
+        )}
         <form className="room-create-form" onSubmit={handleSubmit}>
-          <label className="room-create-label">Tên phòng chiếu</label>
-          <input className="room-create-input" name="name" value={form.name} onChange={handleChange} placeholder="Nhập tên phòng chiếu" />
+          <label className="room-create-label required">Tên phòng chiếu</label>
+          <input 
+            className="room-create-input" 
+            name="name" 
+            value={form.name} 
+            onChange={handleChange} 
+            placeholder="Nhập tên phòng chiếu"
+            required
+          />
 
-          <label className="room-create-label">Loại phòng chiếu</label>
-          <select className="room-create-input" name="type" value={form.type} onChange={handleChange}>
+          <label className="room-create-label required">Loại phòng chiếu</label>
+          <select 
+            className="room-create-input" 
+            name="type" 
+            value={form.type} 
+            onChange={handleChange}
+            required
+          >
             <option value="">Chọn loại phòng</option>
-            <option value="Tiêu chuẩn">Tiêu chuẩn</option>
-            <option value="GOLD CLASS">GOLD CLASS</option>
+            <option value="TWO_D">2D</option>
+            <option value="THREE_D">3D</option>
             <option value="IMAX">IMAX</option>
           </select>
+          {form.type && (
+            <div className="room-create-type-info">
+              Loại phòng hiện tại: {form.type === "TWO_D" ? "2D" : form.type === "THREE_D" ? "3D" : form.type === "IMAX" ? "IMAX" : form.type}
+            </div>
+          )}
 
-          <label className="room-create-label">Số hàng</label>
-          <input className="room-create-input" name="rows" value={form.rows} onChange={handleChange} placeholder="Nhập số hàng" type="number" min={1} />
+          <label className="room-create-label required">Số hàng</label>
+          <input 
+            className="room-create-input" 
+            name="rows" 
+            value={form.rows} 
+            onChange={handleChange} 
+            placeholder="Nhập số hàng" 
+            type="number" 
+            min={1}
+            required
+          />
 
-          <label className="room-create-label">Số cột</label>
-          <input className="room-create-input" name="cols" value={form.cols} onChange={handleChange} placeholder="Nhập số cột" type="number" min={1} />
+          <label className="room-create-label required">Số cột</label>
+          <input 
+            className="room-create-input" 
+            name="cols" 
+            value={form.cols} 
+            onChange={handleChange} 
+            placeholder="Nhập số cột" 
+            type="number" 
+            min={1}
+            required
+          />
 
-          <button className="room-create-btn" type="submit">Lưu</button>
-          <button className="room-create-back-btn" type="button" onClick={onClose}>&lt; Quay lại</button>
+          <button 
+            className="room-create-btn" 
+            type="submit"
+            disabled={saving}
+          >
+            {saving ? "Đang lưu..." : "Lưu"}
+          </button>
+          <button 
+            className="room-create-back-btn" 
+            type="button" 
+            onClick={onClose}
+          >
+            &lt; Quay lại
+          </button>
         </form>
       </div>
     </div>
   );
-} 
+}

@@ -2,17 +2,17 @@
 .account-list-layout {
   display: flex;
   min-height: 100vh;
-  background: #f6f8fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 .account-list-main {
   flex: 1;
-  background: #f6f8fa;
+  background: transparent;
 }
 .account-list-container {
   max-width: 1300px;
   margin: 0 auto;
-  padding: 18px 18px 0 18px;
-  background: #f6f8fa;
+  padding: 24px;
+  background: transparent;
 }
 .account-list-breadcrumb {
   font-size: 15px;
@@ -59,23 +59,38 @@
 // Table
 .account-list-table-wrap {
   width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 700px;
+}
+.account-list-table-body {
+  max-height: 600px;
+  overflow-y: auto;
   overflow-x: auto;
 }
 .account-list-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
   font-size: 15px;
 }
+.account-list-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
 .account-list-table th {
-  border-bottom: 2px solid #d1d5db;
-  padding: 10px 8px;
+  border-bottom: none;
+  padding: 12px 16px;
   text-align: left;
-  background: #f5f5f5;
   font-weight: 600;
-  color: #222;
+  color: #fff;
   font-size: 15px;
 }
 .account-list-table td {
@@ -103,6 +118,26 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.account-avatar-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.account-list-error {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border-left: 4px solid #c62828;
+  box-shadow: 0 4px 15px rgba(198, 40, 40, 0.2);
+}
+.account-list-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
 }
 
 // Role
@@ -253,6 +288,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.account-detail-avatar-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e3e8ee;
+}
+.account-detail-error {
+  padding: 12px 16px;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 4px solid #c62828;
+}
+.account-detail-loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+.account-detail-input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 .account-history-table {
   width: 100%;

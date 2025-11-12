@@ -1,47 +1,182 @@
 import React, { useState } from "react";
+import axios from "axios";
 
-export default function FoodCreateForm({ onBack }: { onBack: () => void }) {
+export default function FoodCreateForm({ onBack, onSuccess }: { onBack: () => void; onSuccess?: () => void }) {
   const [form, setForm] = useState({
     food_img: null as File | null,
     food_img_preview: "",
+    food_img_url: "",
+    food_img_input: "", // For URL input
     food_name: "",
     food_description: "",
     food_price: "",
   });
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm(f => ({ ...f, [e.target.name]: e.target.value }));
   };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0];
     if (file) {
-      setForm(f => ({ ...f, food_img: file, food_img_preview: URL.createObjectURL(file) }));
+      if (!file.type.startsWith('image/')) {
+        alert('Vui lòng chọn file ảnh');
+        return;
+      }
+      setForm(f => ({ ...f, food_img: file, food_img_preview: URL.createObjectURL(file), food_img_input: "" }));
     } else {
       setForm(f => ({ ...f, food_img: null, food_img_preview: "" }));
     }
   };
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // mock: log ra console
-    console.log("Tạo combo:", form);
+
+  const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Update preview if URL is provided
+    if (value && (value.startsWith('http') || value.startsWith('/'))) {
+      setForm(f => ({ ...f, food_img_input: value, food_img_preview: value, food_img_url: value, food_img: null }));
+    } else if (!value) {
+      setForm(f => ({ ...f, food_img_input: value, food_img_preview: "", food_img_url: "" }));
+    } else {
+      setForm(f => ({ ...f, food_img_input: value }));
+    }
   };
+
+  const handleUploadImage = async () => {
+    if (!form.food_img) {
+      alert('Vui lòng chọn file ảnh để upload');
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError(null);
+      const formData = new FormData();
+      formData.append('file', form.food_img);
+      formData.append('type', 'food');
+
+      const response = await axios.post('/api/upload-file', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.data.success) {
+        const uploadedUrl = response.data.url;
+        setForm(f => ({ ...f, food_img_url: uploadedUrl, food_img_preview: uploadedUrl }));
+        alert('Upload ảnh thành công!');
+      }
+    } catch (err: any) {
+      console.error('Error uploading image:', err);
+      setError(err.response?.data?.error || 'Không thể upload ảnh. Vui lòng thử lại.');
+      alert(err.response?.data?.error || 'Không thể upload ảnh. Vui lòng thử lại.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!form.food_name || !form.food_price) {
+      alert('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    // Nếu có file ảnh mới chưa upload, yêu cầu upload trước (trừ khi đã có URL)
+    if (form.food_img && !form.food_img_url && !form.food_img_input) {
+      alert('Vui lòng upload ảnh trước khi tạo combo');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const createData = {
+        food_name: form.food_name,
+        food_description: form.food_description || undefined,
+        food_price: parseFloat(form.food_price),
+        food_img: form.food_img_url || form.food_img_input || undefined,
+      };
+
+      await axios.post('http://localhost:3000/food', createData, {
+        withCredentials: true,
+      });
+
+      alert('Tạo combo thành công!');
+      if (onSuccess) onSuccess();
+      onBack();
+    } catch (err: any) {
+      console.error('Error creating food:', err);
+      setError(err.response?.data?.message || 'Không thể tạo combo');
+      alert(err.response?.data?.message || 'Không thể tạo combo');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="food-create-modal-bg" onClick={e => { if (e.target === e.currentTarget) onBack(); }}>
       <form className="food-create-form" onClick={e => e.stopPropagation()} onSubmit={handleSubmit}>
         <button className="food-create-close" type="button" onClick={onBack}>×</button>
         <div className="food-create-title">Thêm combo đồ ăn</div>
-        <label>Ảnh combo</label>
-        <input type="file" accept="image/*" onChange={handleImageChange} className="food-create-input" />
-        {form.food_img_preview && (
-          <img src={form.food_img_preview} alt="preview" style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8, border: "1px solid #eee", marginBottom: 8 }} />
+        {error && (
+          <div className="food-create-error">
+            {error}
+          </div>
         )}
-        <label>Tên combo</label>
-        <input name="food_name" value={form.food_name} onChange={handleChange} className="food-create-input" required />
+        <label>Ảnh combo</label>
+        <div className="food-create-upload-section">
+          <input 
+            className="food-create-input" 
+            value={form.food_img_input}
+            onChange={handleImageInputChange}
+            placeholder="URL hoặc upload file"
+            disabled={uploading || saving}
+            style={{ flex: 1 }}
+          />
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+            id="food-image-input"
+            disabled={uploading || saving}
+          />
+          <label
+            htmlFor="food-image-input"
+            className="food-create-upload-btn"
+          >
+            Chọn ảnh
+          </label>
+          {form.food_img && !form.food_img_url && (
+            <button
+              type="button"
+              onClick={handleUploadImage}
+              disabled={uploading || saving}
+              className="food-create-upload-submit"
+            >
+              {uploading ? "Đang upload..." : "Upload"}
+            </button>
+          )}
+        </div>
+        {form.food_img_preview && (
+          <div className="food-create-preview">
+            <img src={form.food_img_preview.startsWith('/') ? form.food_img_preview : `/catalog/${form.food_img_preview}`} alt="preview" />
+          </div>
+        )}
+        <label>Tên combo <span>*</span></label>
+        <input name="food_name" value={form.food_name} onChange={handleChange} className="food-create-input" placeholder="Nhập tên combo" required disabled={saving} />
         <label>Mô tả</label>
-        <textarea name="food_description" value={form.food_description} onChange={handleChange} className="food-create-input" rows={2} required />
-        <label>Giá</label>
-        <input name="food_price" value={form.food_price} onChange={handleChange} className="food-create-input" type="number" min={0} required />
-        <button type="submit" className="food-create-btn">Tạo combo</button>
+        <textarea name="food_description" value={form.food_description} onChange={handleChange} className="food-create-input" rows={8} placeholder="Nhập mô tả combo (tùy chọn)..." disabled={saving} />
+        <label>Giá <span>*</span></label>
+        <input name="food_price" value={form.food_price} onChange={handleChange} className="food-create-input" type="number" min={0} step="1000" placeholder="Nhập giá combo" required disabled={saving} />
+        <button type="submit" className="food-create-btn" disabled={uploading || saving}>
+          {saving ? "Đang tạo..." : "Tạo combo"}
+        </button>
       </form>
     </div>
   );

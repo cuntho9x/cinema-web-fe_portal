@@ -1,151 +1,383 @@
 .seatmap-modal-bg {
   position: fixed;
   z-index: 2000;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(30,34,45,0.18);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .seatmap-modal {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(30,34,45,0.18);
-  min-width: 600px;
-  max-width: 90vw;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  min-width: 700px;
+  max-width: 95vw;
   min-height: 0;
-  padding: 24px 16px 12px 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   max-height: 90vh;
   overflow: hidden;
+  animation: modalSlideIn 0.3s ease-out;
 }
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .seatmap-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
 }
+
 .seatmap-modal-title {
-  color: #222;
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+
 .seatmap-modal-close {
-  background: none;
+  background: rgba(0, 0, 0, 0.05);
   border: none;
   font-size: 28px;
-  color: #888;
+  color: #666;
   cursor: pointer;
-  padding: 0 8px;
-  border-radius: 4px;
-  transition: background 0.2s;
+  padding: 8px 12px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: #fff;
+    transform: rotate(90deg) scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  }
 }
-.seatmap-modal-close:hover {
-  background: #f5f5f5;
-  color: #f44336;
-}
+
 .seatmap-modal-screen {
-  background: #222;
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   color: #fff;
-  font-size: 18px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 600;
   text-align: center;
-  border-radius: 6px;
-  padding: 12px 0;
+  border-radius: 12px;
+  padding: 16px 0;
   margin-bottom: 24px;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
 }
+
 .seatmap-modal-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   margin-bottom: 24px;
   overflow-x: auto;
-  max-width: 80vw;
   overflow-y: auto;
-  max-height: 80vh;
+  max-height: 500px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #e0e0e0;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    
+    &:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+  }
 }
+
 .seatmap-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+
 .seatmap-seat {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
   border: 2px solid transparent;
-  transition: box-shadow 0.2s, border 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  &.editable {
+    cursor: pointer;
+    animation: pulse 2s infinite;
+  }
 }
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.3);
+  }
+}
+
 .seat-normal {
-  background: #7c4dff;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
   color: #fff;
+  
+  &:hover {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  }
 }
+
 .seat-vip {
-  background: #f44336;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   color: #fff;
+  
+  &:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  }
 }
+
 .seat-couple {
-  background: #e040fb;
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
   color: #fff;
+  
+  &:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  }
 }
+
 .seat-disabled {
-  background: #222;
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
   color: #fff;
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  
+  &:hover {
+    transform: none;
+  }
 }
-.seat-aisle {
-  background: #43d477;
-  color: #fff;
-}
+
 .seatmap-row-edit {
   margin-left: 12px;
-  color: #43d477;
-  font-size: 22px;
+  color: #667eea;
+  font-size: 24px;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 8px;
+  
+  &:hover {
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.2);
+  }
+  
+  &.active {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.15);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
 }
-.seatmap-row-edit:hover {
-  color: #2196f3;
-}
+
 .seatmap-modal-legend {
   display: flex;
   gap: 24px;
   justify-content: center;
-  margin-top: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  flex-wrap: wrap;
 }
+
 .seatmap-legend-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 15px;
-  color: #444;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  
+  .seatmap-seat {
+    width: 24px;
+    height: 24px;
+    font-size: 0;
+  }
 }
+
+.seatmap-modal-actions {
+  padding: 16px 0 0 0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  border-top: 2px solid #f0f0f0;
+  margin-top: 16px;
+  padding-top: 20px;
+  
+  button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    
+    &:first-child {
+      background: rgba(255, 255, 255, 0.95);
+      color: #666;
+      border: 2px solid #e0e0e0;
+      
+      &:hover {
+        background: #f5f5f5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
+    
+    &:last-child {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+      
+      &:disabled {
+        background: rgba(102, 126, 234, 0.5);
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+    }
+  }
+}
+
+.seatmap-modal-error {
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(198, 40, 40, 0.2);
+  font-weight: 500;
+  border-left: 4px solid #c62828;
+}
+
+.seatmap-modal-loading {
+  padding: 40px;
+  text-align: center;
+  color: #667eea;
+  font-size: 16px;
+  font-weight: 600;
+}
+
 @media (max-width: 1100px) {
   .seatmap-modal {
     min-width: 0;
     max-width: 100vw;
-    padding: 8px 1vw 6px 1vw;
-    max-height: 98vh;
+    padding: 20px;
+    max-height: 95vh;
   }
+  
   .seatmap-modal-grid {
-    max-width: 98vw;
-    max-height: 45vh;
+    max-width: 100%;
+    max-height: 400px;
   }
+  
   .seatmap-seat {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
+    width: 32px;
+    height: 32px;
+    font-size: 10px;
   }
-} 
+  
+  .seatmap-modal-title {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .seatmap-modal {
+    padding: 16px;
+  }
+  
+  .seatmap-seat {
+    width: 28px;
+    height: 28px;
+    font-size: 9px;
+  }
+  
+  .seatmap-modal-legend {
+    gap: 12px;
+  }
+  
+  .seatmap-modal-actions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
